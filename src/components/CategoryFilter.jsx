@@ -1,8 +1,8 @@
 import React from 'react';
 
-function CategoryFilter({ activeCategory, setCategory }) {
+function CategoryFilter({ selectedCategory, setSelectedCategory }) {
     const categories = [
-        { id: 'all', label: 'All Collection' },
+        { id: 'All', label: 'All Collection' },
         { id: 'women', label: 'Women' },
         { id: 'men', label: 'Men' },
         { id: 'children', label: 'Children' }
@@ -12,10 +12,10 @@ function CategoryFilter({ activeCategory, setCategory }) {
         <div className="category-filter-container">
             <div className="category-buttons">
                 {categories.map(cat => (
-                    <button 
+                    <button
                         key={cat.id}
-                        className={`filter-btn ${activeCategory === cat.id ? 'active' : ''}`}
-                        onClick={() => setCategory(cat.id)}
+                        className={`filter-btn ${selectedCategory === cat.id ? 'active' : ''}`}
+                        onClick={() => setSelectedCategory(cat.id)}
                     >
                         {cat.label}
                     </button>

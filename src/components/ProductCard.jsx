@@ -3,7 +3,9 @@ import React from 'react';
 
 // ProductCard receives the product data, addToCart function, and openProductModal function as props
 function ProductCard({ product, addToCart, openProductModal }) {
-    const handleAddToCart = () => {
+    const handleAddToCart = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         // Call the function passed down from App.jsx, giving it the product object
         addToCart(product);
     };
@@ -45,7 +47,7 @@ function ProductCard({ product, addToCart, openProductModal }) {
                     <span className="placeholder-text">Traditional Attire</span>
                 </div>
             </div>
-            
+
             <div className="product-info">
                 <h4
                     className="product-name-link"

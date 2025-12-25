@@ -2,98 +2,87 @@
 import React from 'react';
 
 function ProductDetailModal({ product, isOpen, onClose, addToCart }) {
-    if (!isOpen) return null;
-
-    const handleAddToCart = () => {
-        addToCart(product);
-        onClose(); // Close modal after adding to cart
-    };
+    // Enhanced rendering for the new Premium Modal
+    // We do NOT return null if !isOpen, so that the CSS transition can play.
+    // We only return null if no product is selected yet.
+    if (!product) return null;
 
     const handleBackdropClick = (e) => {
-        if (e.target === e.currentTarget) {
+        if (e.target.classList.contains('modal-backdrop-premium')) {
             onClose();
         }
     };
 
     return (
-        <div className="modal-overlay" onClick={handleBackdropClick}>
-            <div className="product-detail-modal">
-                <div className="modal-header">
-                    <h2>{product.name}</h2>
-                    <button className="close-btn" onClick={onClose}>&times;</button>
+        <div className={`modal-backdrop-premium ${isOpen ? 'open' : ''}`} onClick={handleBackdropClick}>
+            <div className="product-modal-premium">
+
+                {/* Left Column: Huge Image */}
+                <div className="modal-image-col">
+                    {product.image ? (
+                        <img src={product.image} alt={product.name} />
+                    ) : (
+                        <div style={{ fontSize: '5rem', opacity: 0.2 }}>
+                            {product.category === 'women' ? '👗' :
+                                product.category === 'men' ? '👔' : '✨'}
+                        </div>
+                    )}
                 </div>
 
-                <div className="modal-content">
-                    <div className="product-image-section">
-                        <div className="product-image-large">
-                            {product.image ? (
-                                <img src={product.image} alt={product.name} />
-                            ) : (
-                                <div className="image-placeholder">
-                                    <span className="placeholder-icon">
-                                        {product.category === 'women' ? '👗' :
-                                         product.category === 'men' ? '👔' : '👶'}
-                                    </span>
-                                    <p>Traditional Attire</p>
-                                </div>
-                            )}
-                        </div>
+                {/* Right Column: Info & Details */}
+                <div className="modal-info-col">
+                    <button className="modal-close-abs" onClick={onClose}>&times;</button>
+
+                    <div className="modal-product-header">
+                        <span className="modal-badge">{product.category} Collection</span>
+                        <h2>{product.name}</h2>
+                        <span className="modal-price">${product.price}</span>
                     </div>
 
-                    <div className="product-info-section">
-                        <div className="product-price">${product.price}</div>
+                    <div className="modal-description">
+                        <p>{product.longDescription || product.description}</p>
+                    </div>
 
-                        <div className="product-meta">
-                            <span className={`category-badge category-${product.category}`}>
-                                {product.category}
-                            </span>
-                        </div>
+                    <div className="detail-specs">
+                        {product.sizes && (
+                            <div className="spec-item">
+                                <h4>Available Sizes</h4>
+                                <div className="spec-tags">
+                                    {product.sizes.map(size => (
+                                        <span key={size} className="spec-tag">{size}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                        <div className="product-description">
-                            <p>{product.longDescription || product.description}</p>
+                        <div className="spec-item">
+                            <h4>Rental Terms</h4>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-main)' }}>
+                                {product.rentalPeriod || "Standard 3-day rental period. Extended options available."}
+                            </p>
                         </div>
 
                         {product.features && (
-                            <div className="product-features">
-                                <h4>Features</h4>
-                                <ul>
-                                    {product.features.map((feature, index) => (
-                                        <li key={index}>{feature}</li>
+                            <div className="spec-item">
+                                <h4>Highlights</h4>
+                                <ul style={{ paddingLeft: '20px', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                                    {product.features.map((feature, idx) => (
+                                        <li key={idx} style={{ marginBottom: '4px' }}>{feature}</li>
                                     ))}
                                 </ul>
                             </div>
                         )}
+                    </div>
 
-                        <div className="product-details-grid">
-                            {product.sizes && (
-                                <div className="detail-item">
-                                    <h4>Available Sizes</h4>
-                                    <div className="sizes">
-                                        {product.sizes.map(size => (
-                                            <span key={size} className="size-tag">{size}</span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="detail-item">
-                                <h4>Rental Period</h4>
-                                <p>{product.rentalPeriod || "Up to 3 days"}</p>
-                            </div>
-
-                            {product.careInstructions && (
-                                <div className="detail-item">
-                                    <h4>Care Instructions</h4>
-                                    <p>{product.careInstructions}</p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="modal-actions">
-                            <button className="btn" onClick={handleAddToCart}>
-                                Add to Cart - ${product.price}
-                            </button>
-                        </div>
+                    <div className="modal-actions">
+                        <button className="btn" onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart(product);
+                            onClose();
+                        }}>
+                            Add to Cart
+                        </button>
                     </div>
                 </div>
             </div>

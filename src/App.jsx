@@ -48,13 +48,38 @@ function App() {
     const toggleCart = () => setIsCartOpen(!isCartOpen);
 
     const addToCart = (product) => {
-        setCart(prev => [...prev, product]);
-        setToast(`${product.name} added to cart`);
+        setCart(prev => {
+            const existingItem = prev.find(item => item.id === product.id);
+            if (existingItem) {
+                return prev.map(item =>
+                    item.id === product.id
+                        ? { ...item, quantity: (item.quantity || 1) + 1 }
+                        : item
+                );
+            }
+            return [...prev, { ...product, quantity: 1 }];
+        });
+
+        setToast({
+            message: `${product.name} added to cart`,
+            image: product.image,
+            type: 'success'
+        });
     };
 
     const removeItemFromCart = (index) => {
         setCart(prev => prev.filter((_, i) => i !== index));
-        setToast("Item removed from cart");
+        setToast({ message: "Item removed from cart", type: 'info' });
+    };
+
+    const updateQuantity = (index, delta) => {
+        setCart(prev => prev.map((item, i) => {
+            if (i === index) {
+                const newQuantity = (item.quantity || 1) + delta;
+                return { ...item, quantity: newQuantity > 0 ? newQuantity : 1 };
+            }
+            return item;
+        }));
     };
 
     const closeToast = () => setToast(null);
@@ -62,13 +87,16 @@ function App() {
     // Checkout handler
     const handleCheckout = () => {
         if (cart.length === 0) {
-            setToast("Your cart is empty!");
+            setToast({ message: "Your cart is empty!", type: 'error' });
             return;
         }
 
         // For now, just show a success message and clear cart
-        const total = cart.reduce((sum, item) => sum + item.price, 0);
-        setToast(`Order placed successfully! Total: $${total.toFixed(2)}`);
+        const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+        setToast({
+            message: `Order placed successfully! Total: $${total.toFixed(2)}`,
+            type: 'success'
+        });
         setCart([]);
         setIsCartOpen(false);
     };
@@ -81,7 +109,8 @@ function App() {
 
     const closeProductModal = () => {
         setIsProductModalOpen(false);
-        setSelectedProduct(null);
+        // We do NOT plain null the product here, so it stays rendered during the fade-out animation.
+        // It will be overwritten when the next product is opened.
     };
 
     // Category filtering
@@ -100,6 +129,7 @@ function App() {
             <Header
                 cartCount={cart.length}
                 toggleCart={toggleCart}
+                setSelectedCategory={setSelectedCategory}
             />
 
             <CartModal
@@ -107,18 +137,17 @@ function App() {
                 toggleCart={toggleCart}
                 cartItems={cart}
                 removeItemFromCart={removeItemFromCart}
+                updateQuantity={updateQuantity}
                 onCheckout={handleCheckout}
             />
 
-            {/* Product Detail Modal */}
-            {isProductModalOpen && selectedProduct && (
-                <ProductDetailModal
-                    product={selectedProduct}
-                    isOpen={isProductModalOpen}
-                    onClose={closeProductModal}
-                    addToCart={addToCart}
-                />
-            )}
+            {/* Product Detail Modal - Always rendered for animations */}
+            <ProductDetailModal
+                product={selectedProduct}
+                isOpen={isProductModalOpen}
+                onClose={closeProductModal}
+                addToCart={addToCart}
+            />
 
             <Hero />
 
@@ -152,7 +181,9 @@ function App() {
             {/* Toast notification */}
             {toast && (
                 <Toast
-                    message={toast}
+                    message={toast.message}
+                    image={toast.image}
+                    type={toast.type}
                     onClose={closeToast}
                 />
             )}
