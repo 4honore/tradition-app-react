@@ -14,9 +14,9 @@ function Header({ cartCount, toggleCart }) {
         <header>
             <nav className="container">
                 <div className="logo">
-                    <span>M.N.S</span>
+                    <span>M</span><span>.N.</span><span>S</span>
                 </div>
-                
+
                 {/* Nav Links - dynamically add 'active' class based on state */}
                 <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`} id="navLinks">
                     {/* The onClick handler for menu links also closes the mobile menu */}
@@ -26,7 +26,7 @@ function Header({ cartCount, toggleCart }) {
                     <li><a href="#faq" onClick={toggleMenu}>FAQ</a></li>
                     <li><a href="#contact" onClick={toggleMenu}>CONTACT</a></li>
                 </ul>
-                
+
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     {/* Cart Icon - click calls the function passed via props */}
                     <div className="cart-icon" onClick={toggleCart}>
@@ -34,7 +34,7 @@ function Header({ cartCount, toggleCart }) {
                         {/* Cart Count uses the data passed via props */}
                         <span className="cart-count" id="cartCount">{cartCount}</span>
                     </div>
-                    
+
                     {/* Menu Toggle - click calls the local state toggle function */}
                     <div className="menu-toggle" onClick={toggleMenu}>
                         <span></span>
