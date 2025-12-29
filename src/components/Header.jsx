@@ -1,10 +1,22 @@
 // src/components/Header.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// The Header component now receives necessary data and functions via props
 function Header({ cartCount, toggleCart, setSelectedCategory }) {
-    // Local state to manage the mobile menu's open/closed status
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [theme, setTheme] = useState(() => {
+        // Get saved theme or default to 'light'
+        return localStorage.getItem('theme') || 'light';
+    });
+
+    // Apply theme on mount and when it changes
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    };
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -31,7 +43,7 @@ function Header({ cartCount, toggleCart, setSelectedCategory }) {
                     onClick={toggleMenu}
                 ></div>
 
-                {/* Nav Links - Slide in panel */}
+                {/* Nav Links */}
                 <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`} id="navLinks">
                     <li><a href="#home" onClick={toggleMenu}>HOME</a></li>
                     <li><a href="#shop" onClick={toggleMenu}>SHOP</a></li>
@@ -40,11 +52,24 @@ function Header({ cartCount, toggleCart, setSelectedCategory }) {
                     <li><a href="#contact" onClick={toggleMenu}>CONTACT</a></li>
                 </ul>
 
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div className="header-actions">
+                    {/* Dark Mode Toggle */}
+                    <div 
+                        className="theme-toggle" 
+                        onClick={toggleTheme}
+                        title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                    >
+                        <div className="theme-toggle-slider">
+                            {theme === 'light' ? '☀️' : '🌙'}
+                        </div>
+                    </div>
+
                     {/* Cart Icon */}
                     <div className="cart-icon" onClick={toggleCart}>
                         🛒
-                        <span className="cart-count" id="cartCount">{cartCount}</span>
+                        {cartCount > 0 && (
+                            <span className="cart-count" id="cartCount">{cartCount}</span>
+                        )}
                     </div>
 
                     {/* Menu Toggle */}

@@ -25,6 +25,7 @@ function App() {
     // STATE
     // ==========================
 
+    // Global date state (from home page calendar)
     const [pickupDate, setPickupDate] = useState('');
     const [returnDate, setReturnDate] = useState('');
 
@@ -49,10 +50,17 @@ function App() {
 
     const addToCart = (product) => {
         setCart(prev => {
-            const existingItem = prev.find(item => item.id === product.id);
+            const existingItem = prev.find(item => 
+                item.id === product.id && 
+                item.pickupDate === product.pickupDate && 
+                item.returnDate === product.returnDate
+            );
+            
             if (existingItem) {
                 return prev.map(item =>
-                    item.id === product.id
+                    (item.id === product.id && 
+                     item.pickupDate === product.pickupDate && 
+                     item.returnDate === product.returnDate)
                         ? { ...item, quantity: (item.quantity || 1) + 1 }
                         : item
                 );
@@ -60,8 +68,10 @@ function App() {
             return [...prev, { ...product, quantity: 1 }];
         });
 
+        // Calculate duration for toast message
+        const duration = product.rentalDays || 1;
         setToast({
-            message: `${product.name} added to cart`,
+            message: `${product.name} added for ${duration} day${duration > 1 ? 's' : ''}`,
             image: product.image,
             type: 'success'
         });
@@ -91,10 +101,14 @@ function App() {
             return;
         }
 
-        // For now, just show a success message and clear cart
-        const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+        // Calculate total with rental days
+        const total = cart.reduce((sum, item) => {
+            const days = item.rentalDays || 1;
+            return sum + (item.price * days * (item.quantity || 1));
+        }, 0);
+        
         setToast({
-            message: `Order placed successfully! Total: $${total.toFixed(2)}`,
+            message: `✨ Order placed! Total: $${total.toFixed(2)}`,
             type: 'success'
         });
         setCart([]);
@@ -109,8 +123,6 @@ function App() {
 
     const closeProductModal = () => {
         setIsProductModalOpen(false);
-        // We do NOT plain null the product here, so it stays rendered during the fade-out animation.
-        // It will be overwritten when the next product is opened.
     };
 
     // Category filtering
@@ -118,6 +130,9 @@ function App() {
         selectedCategory === 'All'
             ? products
             : products.filter(p => p.category === selectedCategory);
+
+    // Calculate total items and total cost
+    const cartItemCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
     // ==========================
     // UI OUTPUT
@@ -127,7 +142,7 @@ function App() {
         <div className="App">
 
             <Header
-                cartCount={cart.length}
+                cartCount={cartItemCount}
                 toggleCart={toggleCart}
                 setSelectedCategory={setSelectedCategory}
             />
@@ -141,22 +156,60 @@ function App() {
                 onCheckout={handleCheckout}
             />
 
-            {/* Product Detail Modal - Always rendered for animations */}
+            {/* Product Detail Modal - Pass global dates */}
             <ProductDetailModal
                 product={selectedProduct}
                 isOpen={isProductModalOpen}
                 onClose={closeProductModal}
                 addToCart={addToCart}
+                globalPickupDate={pickupDate}
+                globalReturnDate={returnDate}
             />
 
             <Hero />
 
+            {/* Global Date Selector - This affects product modal */}
             <DateSelector
                 pickupDate={pickupDate}
                 setPickupDate={setPickupDate}
                 returnDate={returnDate}
                 setReturnDate={setReturnDate}
             />
+
+            {/* Show message if dates are selected */}
+            {pickupDate && returnDate && (
+                <div style={{
+                    textAlign: 'center',
+                    padding: '20px',
+                    background: 'var(--color-bg-light)',
+                    margin: '0 auto',
+                    maxWidth: '600px',
+                    borderRadius: 'var(--radius-lg)',
+                    marginBottom: '30px'
+                }}>
+                    <p style={{ 
+                        fontSize: '1rem', 
+                        color: 'var(--color-text-main)',
+                        fontWeight: '500'
+                    }}>
+                        📅 Viewing items available from{' '}
+                        <strong style={{ color: 'var(--color-primary)' }}>
+                            {new Date(pickupDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </strong>
+                        {' '}to{' '}
+                        <strong style={{ color: 'var(--color-primary)' }}>
+                            {new Date(returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </strong>
+                    </p>
+                    <p style={{ 
+                        fontSize: '0.85rem', 
+                        color: 'var(--color-text-muted)',
+                        marginTop: '5px'
+                    }}>
+                        These dates will be pre-filled when you add items to cart
+                    </p>
+                </div>
+            )}
 
             {/* CATEGORY FILTER */}
             <CategoryFilter
@@ -191,6 +244,5 @@ function App() {
         </div>
     );
 }
-
 
 export default App;
